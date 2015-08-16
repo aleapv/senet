@@ -9,7 +9,7 @@ object StickColor {
   object Black extends StickColor
   object White extends StickColor
 
-  def getColor(c: StickColor): Short = {
+  def getColor(c: StickColor): Short = c match {
     case Black => 1
     case White => 2
   }
