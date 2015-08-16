@@ -5,6 +5,10 @@ package game.sticks
  */
 object Sticks {
 
+  import org.scalacheck._
+  import game.sticks.Sticks.Color._
+  val throwSticksGen = Gen.containerOfN[List, Color](4, Gen.oneOf(White, Black))
+
   val sticks = List.fill(4)(Stick)
 
   import game.sticks.Sticks.Color._
