@@ -13,8 +13,8 @@ object MainTest {
 
     println
     import game.sticks.Sticks._
-    println(r)
 
-    println(throwSticks)
+    import game.GameMechanics._
+    println(count(throwSticks))
   }
 }
