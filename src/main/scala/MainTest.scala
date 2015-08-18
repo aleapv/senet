@@ -15,6 +15,6 @@ object MainTest {
     import game.sticks.Sticks._
     println(r)
 
-    println(throwSticksGen.sample.get)
+    println(throwSticks)
   }
 }

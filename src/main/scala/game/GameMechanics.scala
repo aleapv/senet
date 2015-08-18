@@ -9,6 +9,8 @@ object GameMechanics {
                   player2: Player)
 
   def defineMove(p1: Player, p2: Player): Player = {
+    import sticks.Sticks._
+    val tS = throwSticks
     p1
   }
 }

@@ -7,15 +7,11 @@ object Sticks {
 
   import org.scalacheck._
   import game.sticks.Sticks.Color._
-  val throwSticksGen = Gen.containerOfN[List, Color](4, Gen.oneOf(White, Black))
+  val throwStickGen = Gen.oneOf(White, Black)
 
   val sticks = List.fill(4)(Stick)
 
-  import game.sticks.Sticks.Color._
-  object Stick {
-    val blackSide = Black
-    val whiteSide = White
-  }
+  case class Stick(c: Color)
 
   // TODO what is the pattern?
   sealed trait Color
@@ -28,7 +24,7 @@ object Sticks {
       case White => 2
     }
   }
-
+  // TODO change ST for scalaz implementation
   sealed trait ST[S,A] { self =>
     protected def run(s: S): (A,S)
     def map[B](f:A => B): ST[S,B] = new ST[S,B] {
@@ -72,17 +68,18 @@ object Sticks {
   trait RunnableST[A] {
     def apply[S]: ST[S,A]
   }
-  val p = new RunnableST[(Int,Int)] {
+
+  def throwSticksST = new RunnableST[List[Stick]] {
     def apply[S] = for {
-      r1 <- STRef(1)
-      r2 <- STRef(2)
-      x <- r1.read
-      y <- r2.read
-      _ <- r1.write(y+1)
-      _ <- r2.write(x+1)
-      a <- r1.read
-      b <- r2.read
-    } yield (a,b)
+      st1 <- STRef(Stick(throwStickGen.sample.get))
+      st2 <- STRef(Stick(throwStickGen.sample.get))
+      st3 <- STRef(Stick(throwStickGen.sample.get))
+      st4 <- STRef(Stick(throwStickGen.sample.get))
+      s1 <- st1.read
+      s2 <- st2.read
+      s3 <- st3.read
+      s4 <- st4.read
+    } yield s1::s2::s3::s4::Nil
   }
-  val r = ST.runST(p)
+  def throwSticks = ST.runST(throwSticksST)
 }
