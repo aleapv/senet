@@ -9,7 +9,7 @@ object Sticks {
   import game.sticks.Sticks.Color._
   val throwStickGen = Gen.oneOf(White, Black)
 
-  val sticks = List.fill(4)(Stick)
+  val sticks = List.fill(4)(Stick(Black))
 
   case class Stick(c: Color)
 
