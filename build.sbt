@@ -17,6 +17,6 @@ libraryDependencies ++= Seq(
   "com.github.japgolly.fork.scalaz" %%% "scalaz-effect" % "7.1.2"  
 )
 
-bootSnippet := "example.ScalaJSExample().main(document.getElementById('canvas'));"
+bootSnippet := "render.Main().main(document.getElementById('canvas'));"
 
 updateBrowsers <<= updateBrowsers.triggeredBy(fastOptJS in Compile)

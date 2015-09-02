@@ -3,6 +3,7 @@ import scala.scalajs.js.annotation.JSExport
 import org.scalajs.dom
 import org.scalajs.dom.html
 import game.GameState._
+import scala.scalajs.js.Dynamic.global
 
 @JSExport
 object Main {
@@ -28,8 +29,9 @@ object Main {
     renderer.font = "20px sans-serif"
     renderer.textAlign = "center"
     renderer.textBaseline = "middle"
-    
 
+    val canvasHTML = dom.document.getElementById("bdy").asInstanceOf[dom.raw.HTMLCanvasElement]
+    
     def repaint() = {
 
       renderer.clearRect(0, 0, canvas.width, canvas.height)
@@ -45,6 +47,11 @@ object Main {
 
     canvas.onclick = (e: dom.MouseEvent) => {
       onclick
+    }
+
+    canvasHTML.onkeypress = (e: dom.KeyboardEvent) => {
+      onclick
+      global.alert("Hello from Scala")
     }
   }
 
