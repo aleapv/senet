@@ -1,37 +1,44 @@
 package game
 
 import scala.util.Random
+import Player._
 
 object GameState {
 	
-  var gWhoseMove = 1 // 1 - first, 2- second
-  var gBegin = true // game begin
-  var gFirstMove = 0 // whose first move
-  var gCount = 0 // sticks count
-  var gDesk: Array[(Int,String)] = initDesk
-  var chips: Array[(Int,Int)] = initChips
-
+  var begin = true
+  var firstMove: Player = null
+  var count = 0
+  var desk: Array[Field] = initDesk
+  var player1 = Player(1, initChips())
+  var player2 = Player(2, initChips())
+  var whoseMove = player1
+  var thrown = false
 
   def switchMove(): Unit = {
     
-    if(gWhoseMove == 1) {
-      gWhoseMove = 2
+    if(whoseMove == player1) {
+      whoseMove = player2
     } else {
-      gWhoseMove = 1
+      whoseMove = player1
     }
   }
 
 
-  def onclick(): Unit = {
-    
-    if(gBegin) {
-      defineFirstMove
+  def throwSticks(player: Player): Unit = {
+
+    if(player == whoseMove && !thrown) {
+      if(begin) {
+        defineFirstMove()
+      } else {
+        throwSticks()
+      }
     }
   }
 
 
-  def throwStick(): Unit = {
-    gCount = Random.nextInt(5)
+  def throwSticks(): Unit = {
+    count = Random.nextInt(5)
+    thrown = true
   }
 
 
@@ -46,46 +53,31 @@ object GameState {
 
   def defineFirstMove(): Unit = {
     
-    throwStick
+    throwSticks()
     
-    if(isFirstMove(gCount)) {
-      gFirstMove = gWhoseMove
-      gBegin = false
+    if(isFirstMove(count)) {
+      firstMove = whoseMove
+      begin = false
     } else {
-      switchMove
+      switchMove()
     }
+    thrown = false
   }
 
 
-  def initDesk: Array[(Int,String)] = {
+  def initDesk: Array[Field] = {
 
-    val d = new Array[(Int,String)](30)
+    val d = new Array[Field](30)
 
     for(i <- 1 to 30) {
-      d(i - 1) = (i, i.toString)
+      d(i - 1) = Field(i, i.toString, null, null)
     }
 
-    d(14) = (15, "φ")
-    d(25) = (26, "V")
-    d(26) = (27, "≡")
-    d(27) = (28, "%")
-    d(28) = (29, "Θ")
+    d(14) = Field(15, "φ", null, null)
+    d(25) = Field(26, "V", null, null)
+    d(26) = Field(27, "≡", null, null)
+    d(27) = Field(28, "%", null, null)
+    d(28) = Field(29, "Θ", null, null)
     d
-  }
-
-
-  def initChips: Array[(Int,Int)] = {
-    
-    val c = new Array[(Int,Int)](20)
-
-    for(l <- 1 to 20) {
-      
-      if(l <= 10) {
-	c(l - 1) = (l, 1)
-      } else {
-	c(l - 1) = (l - 10, 2)
-      }
-    }
-    c
   }
 }
