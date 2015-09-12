@@ -5,18 +5,20 @@ import org.scalajs.dom.html
 import game.GameState._
 import game.Chip._
 import scala.scalajs.js.Dynamic.global
+import scala.collection.mutable.Queue
 
 @JSExport
 object Main {
 
-  val DESK_SQUARE = 50
-  val DESK_STEP = 48
+  val DESK_SQUARE = 90
+  val DESK_STEP = 88
   val DESK_TEXT_SHIFT = 15
-  val STICK_STEP = 15
-  val STICK_WIDTH = 12
-  val STICK_LENGTH = 30
-  val CHIPS_SIZE = 18
-  val CHIPS_STEP = 20
+  val STICK_STEP = 40
+  val STICK_WIDTH = 20
+  val STICK_LENGTH = 80
+  val CHIPS_SIZE = 38
+  val CHIPS_STEP = 40
+  val TEXT_SIZE = 20
 
   @JSExport
   def main(canvas: html.Canvas): Unit = {
@@ -25,9 +27,8 @@ object Main {
                          .asInstanceOf[dom.CanvasRenderingContext2D]
 
     canvas.width = canvas.parentElement.clientWidth
-    canvas.height = 400
+    canvas.height = 800
 
-    renderer.font = "20px sans-serif"
     renderer.textAlign = "center"
     renderer.textBaseline = "middle"
 
@@ -36,13 +37,10 @@ object Main {
     def repaint() = {
 
       renderer.clearRect(0, 0, canvas.width, canvas.height)
-      renderBegin(renderer, 130, 80)
-      renderInfo(renderer, 120, 110, "Сейчас ходит игрок - " + whoseMove.num)    
-      renderSticks(renderer, 270, 80)
-      renderDesk(renderer, 80, 140)
-      renderInfo(renderer, 450, 80, "Счет броска - " + count)
-      renderInfo(renderer, 600, 80, if(thrown) "Бросок выполнен" else "")      
-      renderChips(renderer, 110, 300)  
+      renderText(renderer, 180, 40, messages)
+      renderSticks(renderer, 370, 40)
+      renderDesk(renderer, 50, 140)
+      renderChips(renderer, 50, 450)
     }
 
     dom.setInterval(repaint _, 20)
@@ -69,20 +67,14 @@ object Main {
   }
 
 
-  def renderInfo(r: dom.CanvasRenderingContext2D, x: Int, y: Int, s: String): Unit = {
+  def renderText(r: dom.CanvasRenderingContext2D, x: Int, y: Int, q: Queue[String]): Unit = {
     
-    r.fillStyle = "green"
-    r.fillText(s, x, y)
-  } 
-
-
-  def renderBegin(r: dom.CanvasRenderingContext2D, x: Int, y: Int): Unit = {
-
-    if(begin) {
-      renderInfo(r, x, y, "Определение первого хода")    
-    } else {
-      renderInfo(r, x, y, "Первый ход у " + firstMove.num + " игрока")
-    }
+    r.fillStyle = "darkblue"
+    q.foldLeft((y,TEXT_SIZE / 2))((h,text)=>{
+      r.font = h._2.toString() + "px sans-serif"
+      r.fillText(text, x, h._1)
+      (h._1 + TEXT_SIZE, h._2 + (TEXT_SIZE*0.25).toInt)
+    })
   }
 
 
@@ -107,9 +99,9 @@ object Main {
      
       for(i <- 1 to 10) {
 
-        val x = x0 + i * DESK_STEP
+        val x = x0 + (i-1) * DESK_STEP
         val y = y0 + j * DESK_STEP
-        r.fillStyle = "yellow"
+        r.fillStyle = "lightgreen"
         r.fillRect(x, y, DESK_SQUARE, DESK_SQUARE)
         r.fillStyle = "blue"
         val pos =
@@ -124,9 +116,9 @@ object Main {
         val player = desk(pos).player
         if(chip != null) {
           if(player == player1) {
-            renderChipBlue(r, x, y, 0)
+            renderChipBlue(r, x, y + CHIPS_STEP, 0)
           } else {
-            renderChipRed(r, x, y, 0)
+            renderChipRed(r, x, y + (CHIPS_STEP*1.5).toInt, 0)
           }
         }
       }
@@ -136,25 +128,31 @@ object Main {
 
   def renderChips(r: dom.CanvasRenderingContext2D, x: Int, y: Int): Unit = {
     
-    for(l <- 1 to 10) {
-      renderChipBlue(r, x, y, l)
-      renderChipRed(r, x, y, l)
+    for(l <- 0 to 9) {
+      if(!player1.chips(l).taken) renderChipBlue(r, x, y, l)
+      if(!player2.chips(l).taken) renderChipRed(r, x, y + CHIPS_STEP*2, l)
     }
   }
 
 
   def renderChipBlue(r: dom.CanvasRenderingContext2D, x: Int, y: Int, num: Int): Unit = {
     
-    r.fillStyle = "blue"
+    r.fillStyle = "gray"
     r.fillRect(x + num * CHIPS_STEP, y, CHIPS_SIZE, CHIPS_SIZE)
+    r.fillStyle = "darkblue"
+    r.font = TEXT_SIZE.toString() + "px sans-serif"
+    r.fillText((num + 1).toString(), x + CHIPS_STEP/2 + num * CHIPS_STEP, y + CHIPS_STEP/2)
   }
 
 
   def renderChipRed(r: dom.CanvasRenderingContext2D, x: Int, y: Int, num: Int): Unit = {
     
-    r.fillStyle = "red"
+    r.fillStyle = "pink"
     r.beginPath();
-    r.arc((x + CHIPS_STEP/2 + num * CHIPS_STEP).toDouble, (y + CHIPS_STEP*2).toDouble, CHIPS_SIZE/2, 0.0, 360.0)
+    r.arc((x + CHIPS_STEP/2 + num * CHIPS_STEP).toDouble, (y).toDouble, CHIPS_SIZE/2, 0.0, 360.0)
     r.fill();
+    r.fillStyle = "darkblue"
+    r.font = TEXT_SIZE.toString() + "px sans-serif"
+    r.fillText((num + 1).toString(), x + CHIPS_STEP/2 + num * CHIPS_STEP, y)
   }
 }

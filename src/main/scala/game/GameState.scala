@@ -2,6 +2,7 @@ package game
 
 import scala.util.Random
 import Player._
+import scala.collection.mutable.Queue
 
 object GameState {
 	
@@ -13,6 +14,10 @@ object GameState {
   var player2 = Player(2, initChips())
   var whoseMove = player1
   var thrown = false
+  var messages = Queue(
+    "Сейчас ходит игрок - " + whoseMove.num,
+    "Здравствуйте, уважаемые игроки",
+    "Определение первого хода")
 
   def switchMove(): Unit = {
     
@@ -21,6 +26,7 @@ object GameState {
     } else {
       whoseMove = player1
     }
+    addMessage(messages, "Сейчас ходит игрок - " + whoseMove.num)
   }
 
 
@@ -39,6 +45,11 @@ object GameState {
   def throwSticks(): Unit = {
     count = Random.nextInt(5)
     thrown = true
+    addMessage(messages, "Счет броска - " + count)
+    if(count == 0) {
+      switchMove()
+      thrown = false
+    }
   }
 
 
@@ -58,6 +69,7 @@ object GameState {
     if(isFirstMove(count)) {
       firstMove = whoseMove
       begin = false
+      addMessage(messages, "Первый ход у " + firstMove.num + " игрока")
     } else {
       switchMove()
     }
@@ -79,5 +91,11 @@ object GameState {
     d(27) = Field(28, "%", null, null)
     d(28) = Field(29, "Θ", null, null)
     d
+  }
+
+  def addMessage(m:Queue[String], s:String):Unit = {
+
+    m.dequeue()
+    m += s
   }
 }

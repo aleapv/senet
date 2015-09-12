@@ -2,7 +2,7 @@ package game
 
 import GameState._
 
-case class Chip(num: Int, taken: Boolean, pos: Int)
+class Chip(num: Int, taken: Boolean, pos: Int)
 
 object Chip {
 
@@ -11,9 +11,12 @@ object Chip {
 
     if(player == whoseMove) {
       if(!begin && thrown) {
-        val f = desk(29 - count)
-        desk(29 - count + 1) = Field(f.num,f.text,player,getNewChip(player))
-
+        val f = desk(29 - count + 1)
+        if(f.chip == null) {
+          desk(29 - count + 1) = Field(f.num,f.text,player,getNewChip(player))
+        } else {
+          addMessage(messages, "Эта клетка уже занята!")
+        }
         switchMove()
         thrown = false
       }
@@ -27,7 +30,7 @@ object Chip {
     while(player.chips(i).taken == true){
       i += 1
     }
-    player.chips(i) = Chip(i, true, count)
+    player.chips(i) = Chip(i, true, player.chips(i).pos - count)
     player.chips(i)
   }
 
@@ -35,11 +38,18 @@ object Chip {
   def move(c: Chip): Unit = {
 
     if(!begin && thrown) {
+      val f0 = desk(c.pos)
+      val f = desk(c.pos - count)
+      if(f.chip == null) {
+        desk(c.pos - count) =
+          Field(f.num,f.text,whoseMove,
+            Chip(c.num,c.taken,c.pos + count))
+        desk(0).chip.num=2
+        desk(c.pos) = Field(f0.num,f0.text,null,null)
+      } else {
+        addMessage(messages, "Эта клетка уже занята!")
+      }
 
-      val f = desk(29 - c.pos)
-      desk(29 - c.pos) =
-        Field(f.num,f.text,whoseMove,
-          Chip(c.num,c.taken,c.pos + count))
 
       switchMove()
       thrown = false

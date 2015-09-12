@@ -11,7 +11,7 @@ object Player {
     val c = new Array[Chip](10)
 
     for(l <- 0 to 9) {
-      c(l) = Chip(l, false, 0)
+      c(l) = Chip(l, false, 30)
     }
     c
   }
