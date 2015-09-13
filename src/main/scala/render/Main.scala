@@ -1,9 +1,11 @@
 package render
+
 import scala.scalajs.js.annotation.JSExport
 import org.scalajs.dom
 import org.scalajs.dom.html
+import GameState._
 import game.GameState._
-import game.Chip._
+import game._
 import scala.scalajs.js.Dynamic.global
 import scala.collection.mutable.Queue
 
@@ -37,7 +39,7 @@ object Main {
     def repaint() = {
 
       renderer.clearRect(0, 0, canvas.width, canvas.height)
-      renderText(renderer, 180, 40, messages)
+      renderText(renderer, 180, 40, gMessages)
       renderSticks(renderer, 370, 40)
       renderDesk(renderer, 50, 140)
       renderChips(renderer, 50, 450)
@@ -48,20 +50,40 @@ object Main {
     canvasHTML.onkeydown = (e: dom.KeyboardEvent) => {
 
       e.keyCode.toInt match {
-        case 65 => throwSticks(player1)
-        case 83 => newChip(player1)
-        case 74 => throwSticks(player2)
-        case 75 => newChip(player2)
-        case 49 => move(whoseMove.chips(0))
-        case 50 => move(whoseMove.chips(1))
-        case 51 => move(whoseMove.chips(2))
-        case 52 => move(whoseMove.chips(3))
-        case 53 => move(whoseMove.chips(4))
-        case 54 => move(whoseMove.chips(5))
-        case 55 => move(whoseMove.chips(6))
-        case 56 => move(whoseMove.chips(7))
-        case 57 => move(whoseMove.chips(8))
-        case 48 => move(whoseMove.chips(9))
+        case 65 => throwSticks(gPlayer1, gWhoseMove, gThrown, gBegin, gPlayer1, gPlayer2)
+        case 83 => newChip(gPlayer1, gWhoseMove, gThrown, gBegin, gCount, gDesk, gPlayer1, gPlayer2)
+        case 74 => throwSticks(gPlayer2, gWhoseMove, gThrown, gBegin, gPlayer1, gPlayer2)
+        case 75 => newChip(gPlayer2, gWhoseMove, gThrown, gBegin, gCount, gDesk, gPlayer1, gPlayer2)
+        case 49 =>
+          moveChip(
+            gWhoseMove.chips(0), gWhoseMove, gThrown, gBegin, gCount, gDesk, gPlayer1, gPlayer2)
+        case 50 =>
+          moveChip(
+            gWhoseMove.chips(1), gWhoseMove, gThrown, gBegin, gCount, gDesk, gPlayer1, gPlayer2)
+        case 51 =>
+          moveChip(
+            gWhoseMove.chips(2), gWhoseMove, gThrown, gBegin, gCount, gDesk, gPlayer1, gPlayer2)
+        case 52 =>
+          moveChip(
+            gWhoseMove.chips(3), gWhoseMove, gThrown, gBegin, gCount, gDesk, gPlayer1, gPlayer2)
+        case 53 =>
+          moveChip(
+            gWhoseMove.chips(4), gWhoseMove, gThrown, gBegin, gCount, gDesk, gPlayer1, gPlayer2)
+        case 54 =>
+          moveChip(
+            gWhoseMove.chips(5), gWhoseMove, gThrown, gBegin, gCount, gDesk, gPlayer1, gPlayer2)
+        case 55 =>
+          moveChip(
+            gWhoseMove.chips(6), gWhoseMove, gThrown, gBegin, gCount, gDesk, gPlayer1, gPlayer2)
+        case 56 =>
+          moveChip(
+            gWhoseMove.chips(7), gWhoseMove, gThrown, gBegin, gCount, gDesk, gPlayer1, gPlayer2)
+        case 57 =>
+          moveChip(
+            gWhoseMove.chips(8), gWhoseMove, gThrown, gBegin, gCount, gDesk, gPlayer1, gPlayer2)
+        case 48 =>
+          moveChip(
+            gWhoseMove.chips(9), gWhoseMove, gThrown, gBegin, gCount, gDesk, gPlayer1, gPlayer2)
       }
     }
   }
@@ -80,7 +102,7 @@ object Main {
 
   def renderSticks(r: dom.CanvasRenderingContext2D, x: Int, y: Int): Unit = {
 
-    List(1,2,3,4).foldLeft(count)((st: Int, n: Int) => {
+    List(1,2,3,4).foldLeft(gCount)((st: Int, n: Int) => {
 
       if(st > 0 && st < 5) {
         r.fillStyle = "black"
@@ -110,12 +132,12 @@ object Main {
           } else {
             30 - i - j * 10
           }
-        r.fillText(desk(pos).text, x + DESK_TEXT_SHIFT, y + DESK_TEXT_SHIFT)
+        r.fillText(gDesk(pos).text, x + DESK_TEXT_SHIFT, y + DESK_TEXT_SHIFT)
 
-        val chip = desk(pos).chip
-        val player = desk(pos).player
+        val chip = gDesk(pos).chip
+        val player = gDesk(pos).player
         if(chip != null) {
-          if(player == player1) {
+          if(player == gPlayer1) {
             renderChipBlue(r, x, y + CHIPS_STEP, 0)
           } else {
             renderChipRed(r, x, y + (CHIPS_STEP*1.5).toInt, 0)
@@ -129,8 +151,8 @@ object Main {
   def renderChips(r: dom.CanvasRenderingContext2D, x: Int, y: Int): Unit = {
     
     for(l <- 0 to 9) {
-      if(!player1.chips(l).taken) renderChipBlue(r, x, y, l)
-      if(!player2.chips(l).taken) renderChipRed(r, x, y + CHIPS_STEP*2, l)
+      if(!gPlayer1.chips(l).taken) renderChipBlue(r, x, y, l)
+      if(!gPlayer2.chips(l).taken) renderChipRed(r, x, y + CHIPS_STEP*2, l)
     }
   }
 
@@ -155,4 +177,77 @@ object Main {
     r.font = TEXT_SIZE.toString() + "px sans-serif"
     r.fillText((num + 1).toString(), x + CHIPS_STEP/2 + num * CHIPS_STEP, y)
   }
+
+
+  def throwSticks(
+    player: Player,
+    whoseMove: Player,
+    thrown: Boolean,
+    begin: Boolean,
+    player1: Player,
+    player2: Player):Unit = {
+    // whoseMove, begin, thrown, count, message
+    val t = throwStick(player, whoseMove, thrown, begin, player1, player2)
+    if(t._1 != null) gWhoseMove = t._1
+    if(t._2 != null) gBegin = t._2
+    if(t._3 != null) gThrown = t._3
+    if(t._4 != 0) gCount = t._4
+    if(t._5 != null) addMessage(t._5)
+  }
+
+
+  def newChip(
+    player: Player,
+    whoseMove: Player,
+    thrown: Boolean,
+    begin: Boolean,
+    count: Int,
+    desk: Array[Field],
+    player1: Player,
+    player2: Player
+  ):Unit = {
+    // Chip, whoseMove, thrown, message
+
+    val t = newChi(player, whoseMove, thrown, begin, count, desk, player1, player2)
+    if(t._1 != null) {
+      val i = t._1.num - 1
+      val pos0 = player.chips(i).pos
+      player.chips.update(i, Chip(i + 1, true, pos0 - count))
+      val chip = player.chips(i)
+      gDesk.update(chip.pos,
+        Field(chip.pos + 1, (chip.pos + 1).toString(), player, chip))
+    }
+    if(t._2 != null) gWhoseMove = t._2
+    if(t._3 != null) gThrown = t._3
+    if(t._4 != null) addMessage(t._4)
+  }
+
+
+  def moveChip(
+    chip: Chip,
+    whoseMove: Player,
+    thrown: Boolean,
+    begin: Boolean,
+    count: Int,
+    desk: Array[Field],
+    player1: Player,
+    player2: Player
+  ):Unit = {
+    // Chip, whoseMove, thrown, message
+
+    val t = moveChi(chip, whoseMove, thrown, begin, count, desk, player1, player2)
+    if(t._1 != null) {
+      val i = t._1.num - 1
+      val pos0 = whoseMove.chips(i).pos
+      whoseMove.chips.update(i, Chip(i + 1, true, pos0 - count))
+      val chip = whoseMove.chips(i)
+      gDesk.update(chip.pos,
+        Field(chip.pos + 1, (chip.pos + 1).toString(), whoseMove, chip))
+      gDesk.update(pos0,
+        Field(pos0 + 1, (pos0 + 1).toString(), null, null))
+    }
+    if(t._2 != null) gWhoseMove = t._2
+    if(t._3 != null) gThrown = t._3
+    if(t._4 != null) addMessage(t._4)
+  }  
 }

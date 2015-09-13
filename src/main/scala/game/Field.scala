@@ -1,8 +1,8 @@
 package game
 
-case class Field(
-  num: Int,
-  text: String,
-  player: Player,
-  chip: Chip
+case class Field (
+  val num: Int,
+  val text: String,
+  val player: Player,
+  val chip: Chip
 )

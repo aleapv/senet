@@ -1,54 +1,55 @@
 package game
 
 import scala.util.Random
-import Player._
 import scala.collection.mutable.Queue
 
 object GameState {
-	
-  var begin = true
-  var firstMove: Player = null
-  var count = 0
-  var desk: Array[Field] = initDesk
-  var player1 = Player(1, initChips())
-  var player2 = Player(2, initChips())
-  var whoseMove = player1
-  var thrown = false
-  var messages = Queue(
-    "Сейчас ходит игрок - " + whoseMove.num,
-    "Здравствуйте, уважаемые игроки",
-    "Определение первого хода")
 
-  def switchMove(): Unit = {
+
+  def switchMove(
+    whoseMove: Player,
+    player1: Player,
+    player2: Player): Player = {
     
     if(whoseMove == player1) {
-      whoseMove = player2
+      player2
     } else {
-      whoseMove = player1
+      player1
     }
-    addMessage(messages, "Сейчас ходит игрок - " + whoseMove.num)
   }
 
 
-  def throwSticks(player: Player): Unit = {
+  def throwStick(
+    player: Player,
+    whoseMove: Player,
+    thrown: Boolean,
+    begin: Boolean,
+    player1: Player,
+    player2: Player):
+      (
+        Player,
+        Boolean,
+        Boolean,
+        Int,
+        String) = { // whoseMove, begin, thrown, count, message
 
-    if(player == whoseMove && !thrown) {
-      if(begin) {
-        defineFirstMove()
+    val count = Random.nextInt(5)
+    val switchedMove = switchMove(whoseMove, player1, player2)
+
+    if((player.num != whoseMove.num) || thrown) {
+      (whoseMove, begin, thrown, 0, "Недопустимый ход")
+    }
+
+    else if(begin) {
+      if(isFirstMove(count)) {
+        (player, false, false, count, "Первый ход у " + player.num + " игрока")
       } else {
-        throwSticks()
+        (switchedMove, true, false, count, "Сейчас ходит игрок - " + switchedMove.num)
       }
     }
-  }
 
-
-  def throwSticks(): Unit = {
-    count = Random.nextInt(5)
-    thrown = true
-    addMessage(messages, "Счет броска - " + count)
-    if(count == 0) {
-      switchMove()
-      thrown = false
+    else {
+      (player, false, true, count, "Игрок " + player.num +  " выбросил " + count)
     }
   }
 
@@ -62,40 +63,69 @@ object GameState {
   }
 
 
-  def defineFirstMove(): Unit = {
-    
-    throwSticks()
-    
-    if(isFirstMove(count)) {
-      firstMove = whoseMove
-      begin = false
-      addMessage(messages, "Первый ход у " + firstMove.num + " игрока")
-    } else {
-      switchMove()
+  def newChi(
+    player: Player,
+    whoseMove: Player,
+    thrown: Boolean,
+    begin: Boolean,
+    count: Int,
+    desk: Array[Field],
+    player1: Player,
+    player2: Player
+  ): (Chip, Player, Boolean, String) = {
+
+    // Chip, whoseMove, thrown, message
+
+    val field = desk(29 - count + 1)
+    val chip = getNewChip(player, count)
+    val switchedMove = switchMove(whoseMove, player1, player2)
+
+    if(player != whoseMove || begin || !thrown) {
+      (null,null,thrown, "Невозможно поставить новую фишку")
+    } 
+
+    else if(field.chip != null) {
+      (null, switchedMove, false, "Эта клетка уже занята!")
     }
-    thrown = false
+
+    else {
+      (chip, switchedMove, false, "Новая фишка поставлена")
+    }
   }
 
 
-  def initDesk: Array[Field] = {
+  def getNewChip(player: Player, count: Int): Chip = {
 
-    val d = new Array[Field](30)
-
-    for(i <- 1 to 30) {
-      d(i - 1) = Field(i, i.toString, null, null)
+    var i = 0
+    while(player.chips(i).taken == true){
+      i += 1
     }
-
-    d(14) = Field(15, "φ", null, null)
-    d(25) = Field(26, "V", null, null)
-    d(26) = Field(27, "≡", null, null)
-    d(27) = Field(28, "%", null, null)
-    d(28) = Field(29, "Θ", null, null)
-    d
+    player.chips(i)
   }
 
-  def addMessage(m:Queue[String], s:String):Unit = {
 
-    m.dequeue()
-    m += s
+  def moveChi(
+    chip: Chip,
+    whoseMove: Player,
+    thrown: Boolean,
+    begin: Boolean,
+    count: Int,
+    desk: Array[Field],
+    player1: Player,
+    player2: Player
+  ): (Chip, Player, Boolean, String) = {
+
+    // Chip, whoseMove, thrown, message
+
+    val field = desk(chip.pos - count)
+    val switchedMove = switchMove(whoseMove, player1, player2)
+
+    if(field.chip != null) {
+      (null, switchedMove, false, "Эта клетка уже занята!")
+    }
+
+    else {
+      (chip, switchedMove, false, "Фишка перемещена")
+    }
   }
 }
