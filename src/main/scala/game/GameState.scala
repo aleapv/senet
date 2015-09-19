@@ -26,30 +26,45 @@ object GameState {
     begin: Boolean,
     player1: Player,
     player2: Player):
-      (
-        Player,
-        Boolean,
-        Boolean,
-        Int,
+      (Option[Player],
+        Option[Boolean],
+        Option[Boolean],
+        Option[Int],
         String) = { // whoseMove, begin, thrown, count, message
 
     val count = Random.nextInt(5)
     val switchedMove = switchMove(whoseMove, player1, player2)
 
     if((player.num != whoseMove.num) || thrown) {
-      (whoseMove, begin, thrown, 0, "Недопустимый ход")
+      (Some(whoseMove),
+        Some(begin),
+        Some(thrown),
+        None,
+        "Недопустимый ход")
     }
 
     else if(begin) {
       if(isFirstMove(count)) {
-        (player, false, false, count, "Первый ход у " + player.num + " игрока")
+        (Some(player),
+          Some(false),
+          Some(false),
+          Some(count),
+          "Первый ход у " + player.num + " игрока")
       } else {
-        (switchedMove, true, false, count, "Сейчас ходит игрок - " + switchedMove.num)
+        (Some(switchedMove),
+          Some(true),
+          Some(false),
+          Some(count),
+          "Сейчас ходит игрок - " + switchedMove.num)
       }
     }
 
     else {
-      (player, false, true, count, "Игрок " + player.num +  " выбросил " + count)
+      (Some(player),
+        Some(false),
+        Some(true),
+        Some(count),
+        "Игрок " + player.num +  " выбросил " + count)
     }
   }
 
@@ -72,7 +87,7 @@ object GameState {
     desk: Array[Field],
     player1: Player,
     player2: Player
-  ): (Chip, Player, Boolean, String) = {
+  ): (Option[Chip], Option[Player], Option[Boolean], String) = {
 
     // Chip, whoseMove, thrown, message
 
@@ -81,15 +96,20 @@ object GameState {
     val switchedMove = switchMove(whoseMove, player1, player2)
 
     if(player != whoseMove || begin || !thrown) {
-      (null,null,thrown, "Невозможно поставить новую фишку")
+      (None,None,None, "Невозможно поставить новую фишку")
     } 
 
     else if(field.chip != null) {
-      (null, switchedMove, false, "Эта клетка уже занята!")
+      (None,
+        Some(switchedMove),
+        Some(false),
+        "Эта клетка уже занята!")
     }
 
     else {
-      (chip, switchedMove, false, "Новая фишка поставлена")
+      (Some(chip),
+        Some(switchedMove),
+        Some(false), "Новая фишка поставлена")
     }
   }
 
@@ -113,7 +133,7 @@ object GameState {
     desk: Array[Field],
     player1: Player,
     player2: Player
-  ): (Chip, Player, Boolean, String) = {
+  ): (Option[Chip], Option[Player], Option[Boolean], String) = {
 
     // Chip, whoseMove, thrown, message
 
@@ -121,11 +141,17 @@ object GameState {
     val switchedMove = switchMove(whoseMove, player1, player2)
 
     if(field.chip != null) {
-      (null, switchedMove, false, "Эта клетка уже занята!")
+      (None,
+        Some(switchedMove),
+        Some(false),
+        "Эта клетка уже занята!")
     }
 
     else {
-      (chip, switchedMove, false, "Фишка перемещена")
+      (Some(chip),
+        Some(switchedMove),
+        Some(false),
+        "Фишка перемещена")
     }
   }
 }

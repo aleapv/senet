@@ -20,3 +20,5 @@ libraryDependencies ++= Seq(
 bootSnippet := "render.Main().main(document.getElementById('canvas'));"
 
 updateBrowsers <<= updateBrowsers.triggeredBy(fastOptJS in Compile)
+
+initialCommands += "import scalaz._, Scalaz._"

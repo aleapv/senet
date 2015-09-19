@@ -5,3 +5,10 @@ case class Chip (
   taken: Boolean,
   pos: Int
 )
+
+object Chip {
+
+  def movedChip(old:Chip,count:Int):Chip={
+    Chip(old.num,true,old.pos-count)
+  }
+}
