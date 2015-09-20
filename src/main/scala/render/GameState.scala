@@ -55,21 +55,15 @@ object GameState {
 
     val d = new Array[Field](30)
 
-    for(i <- 1 to 30) {
-      d(i - 1) = Field(i, i.toString, null, null)
+    for(i <- 0 to 29) {
+      d(i) = Field(i, fieldText(i + 1), null, null)
     }
-
-    d(14) = d(14).copy(text = "φ")
-    d(25) = d(25).copy(text = "V")
-    d(26) = d(26).copy(text = "≡")
-    d(27) = d(27).copy(text = "%")
-    d(28) = d(28).copy(text = "Θ")
     d
   }
 
   def updategDesk(pos:Int,chip:Chip,player:Player)={
     gDesk.update(pos,
-      Field(pos + 1, (pos + 1).toString(), player, chip))
+      Field(pos + 1, fieldText(pos + 1), player, chip))
   }
 
   def setgDesk(chip:Chip,player:Player)={
@@ -80,4 +74,14 @@ object GameState {
     updategDesk(pos,null,null)
   }
 
+  def fieldText(index: Int): String = {
+    index match {
+      case 15 => "φ"
+      case 26 => "V"
+      case 27 => "≡"
+      case 28 => "%"
+      case 29 => "Θ"
+      case _ => index.toString
+    }
+  }
 }
