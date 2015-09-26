@@ -1,7 +1,5 @@
 # senet
 
-Main goal is the pure functional game.
+https://en.wikipedia.org/wiki/Senet
 
-Game description - https://en.wikipedia.org/wiki/Senet.
-
-In project used scala-js, scalaz.
+http://pravilaigr.ru/senet.php
